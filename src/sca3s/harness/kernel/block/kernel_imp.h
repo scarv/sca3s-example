@@ -17,7 +17,7 @@
   */
 
 #if !defined( KERNEL_NAMEOF     )
-#define KERNEL_NAMEOF     ( KERNEL_NAMEOF_GENERIC )
+#define KERNEL_NAMEOF     ( KERNEL_NAMEOF_AES )
 #endif
 
 /** @brief      The kernel type, i.e., either

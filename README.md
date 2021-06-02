@@ -1,4 +1,4 @@
-# [SCA3S](https://github.com/scarv/sca3s): target implementation harness
+# [SCA3S](https://github.com/scarv/sca3s): target implementation harness example
 
 <!--- -------------------------------------------------------------------- --->
 
