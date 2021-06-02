@@ -1,0 +1,41 @@
+# Copyright (C) 2018 SCARV project <info@scarv.org>
+#
+# Use of this source code is restricted per the MIT license, a copy of which 
+# can be found at https://opensource.org/licenses/MIT (or should be included 
+# as LICENSE.txt within the associated archive or repository).
+
+# =============================================================================
+
+    GCC_PREFIX  =
+
+    GCC_PATHS  += 
+    GCC_FLAGS  += 
+    GCC_LIBS   += 
+
+READELF_FLAGS  += --wide --all
+OBJCOPY_FLAGS  +=
+
+ TARGETS       += ${REPO_HOME}/build/${BOARD}/target.elf
+
+define parse
+  grep 'note:' | sed -e 's|.*note: \#pragma message: ||'
+endef
+
+# =============================================================================
+
+${REPO_HOME}/build/${BOARD}/%.o : %.c %.h
+	@${GCC_PREFIX}gcc $(patsubst %, -I %, ${INCLUDES}) ${GCC_PATHS} ${GCC_FLAGS} ${CONF} -c -o ${@} ${<} 2>&1 | tee ${REPO_HOME}/build/${BOARD}/${*}.log
+${REPO_HOME}/build/${BOARD}/%.o : %.s
+	@${GCC_PREFIX}gcc $(patsubst %, -I %, ${INCLUDES}) ${GCC_PATHS} ${GCC_FLAGS} ${CONF} -c -o ${@} ${<} 2>&1 | tee ${REPO_HOME}/build/${BOARD}/${*}.log
+${REPO_HOME}/build/${BOARD}/%.o : %.S
+	@${GCC_PREFIX}gcc $(patsubst %, -I %, ${INCLUDES}) ${GCC_PATHS} ${GCC_FLAGS} ${CONF} -c -o ${@} ${<} 2>&1 | tee ${REPO_HOME}/build/${BOARD}/${*}.log
+
+${REPO_HOME}/build/${BOARD}/%.elf ${REPO_HOME}/build/${BOARD}/%.map : ${OBJECTS}
+	@${GCC_PREFIX}gcc $(patsubst %, -I %, ${INCLUDES}) ${GCC_PATHS} ${GCC_FLAGS} ${CONF} -Wl,-Map="${REPO_HOME}/build/${BOARD}/${*}.map" -o ${REPO_HOME}/build/${BOARD}/${*}.elf ${^} ${GCC_LIBS}
+
+report   : ${TARGETS}
+	@${GCC_PREFIX}readelf ${READELF_FLAGS} $(filter %.elf, ${^})
+io       : ${TARGETS}
+	@cat ${REPO_HOME}/build/${BOARD}/*.log | $(call parse) | sort | uniq > ${REPO_HOME}/build/${BOARD}/target.io
+
+# =============================================================================

@@ -1,0 +1,51 @@
+# Copyright (C) 2018 SCARV project <info@scarv.org>
+#
+# Use of this source code is restricted per the MIT license, a copy of which 
+# can be found at https://opensource.org/licenses/MIT (or should be included 
+# as LICENSE.txt within the associated archive or repository).
+
+# =============================================================================
+
+    GCC_PREFIX  = arm-none-eabi-
+
+    GCC_PATHS  += -I ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4
+    GCC_PATHS  += -L ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4
+    GCC_FLAGS  += -mcpu="cortex-m4" -mthumb -mfloat-abi="soft" 
+    GCC_FLAGS  += -funsigned-char -funsigned-bitfields -fshort-enums -ffunction-sections -Wall -std="gnu99" -Os
+    GCC_FLAGS  += -DSTM32 -DSTM32F4 -DSTM32F415RGTx -DF_CPU="7372800UL"
+    GCC_FLAGS  += -T ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4/LinkerScript.ld --specs="nano.specs" --specs="nosys.specs" 
+    GCC_LIBS   += -lm 
+
+READELF_FLAGS  += --wide --all
+OBJCOPY_FLAGS  += --gap-fill="0" --remove-section .eeprom --remove-section .fuse --remove-section .lock --remove-section .signature
+
+ TARGETS       += ${REPO_HOME}/build/${BOARD}/target.elf 
+ TARGETS       += ${REPO_HOME}/build/${BOARD}/target.bin 
+ TARGETS       += ${REPO_HOME}/build/${BOARD}/target.hex
+
+define parse
+  grep 'note:' | sed -e 's|.*note: \#pragma message: ||'
+endef
+
+# =============================================================================
+
+${REPO_HOME}/build/${BOARD}/%.o : %.c %.h
+	@${GCC_PREFIX}gcc $(patsubst %, -I %, ${INCLUDES}) ${GCC_PATHS} ${GCC_FLAGS} ${SCALE_CONF} ${CONF} -c -o ${@} ${<} 2>&1 | tee ${REPO_HOME}/build/${BOARD}/${*}.log
+${REPO_HOME}/build/${BOARD}/%.o : %.s
+	@${GCC_PREFIX}gcc $(patsubst %, -I %, ${INCLUDES}) ${GCC_PATHS} ${GCC_FLAGS} ${SCALE_CONF} ${CONF} -c -o ${@} ${<} 2>&1 | tee ${REPO_HOME}/build/${BOARD}/${*}.log
+${REPO_HOME}/build/${BOARD}/%.o : %.S
+	@${GCC_PREFIX}gcc $(patsubst %, -I %, ${INCLUDES}) ${GCC_PATHS} ${GCC_FLAGS} ${SCALE_CONF} ${CONF} -c -o ${@} ${<} 2>&1 | tee ${REPO_HOME}/build/${BOARD}/${*}.log
+
+${REPO_HOME}/build/${BOARD}/%.elf ${REPO_HOME}/build/${BOARD}/%.map : ${OBJECTS}
+	@${GCC_PREFIX}gcc $(patsubst %, -I %, ${INCLUDES}) ${GCC_PATHS} ${GCC_FLAGS} ${SCALE_CONF} ${CONF} -Wl,-Map="${REPO_HOME}/build/${BOARD}/${*}.map" -o ${REPO_HOME}/build/${BOARD}/${*}.elf ${^} ${GCC_LIBS}
+${REPO_HOME}/build/${BOARD}/%.bin                                   : ${REPO_HOME}/build/${BOARD}/%.elf
+	@${GCC_PREFIX}objcopy ${OBJCOPY_FLAGS} --output-target="binary" ${<} ${@}
+${REPO_HOME}/build/${BOARD}/%.hex                                   : ${REPO_HOME}/build/${BOARD}/%.elf
+	@${GCC_PREFIX}objcopy ${OBJCOPY_FLAGS} --output-target="ihex"   ${<} ${@}
+
+report   : ${TARGETS}
+	@${GCC_PREFIX}readelf ${READELF_FLAGS} $(filter %.elf, ${^})
+io       : ${TARGETS}
+	@cat ${REPO_HOME}/build/${BOARD}/*.log | $(call parse) | sort | uniq > ${REPO_HOME}/build/${BOARD}/target.io
+
+# =============================================================================

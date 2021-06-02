@@ -1,0 +1,24 @@
+# Copyright (C) 2018 SCARV project <info@scarv.org>
+#
+# Use of this source code is restricted per the MIT license, a copy of which 
+# can be found at https://opensource.org/licenses/MIT (or should be included 
+# as LICENSE.txt within the associated archive or repository).
+
+# =============================================================================
+
+-include ${DEPS}/scale-hw/target/lpc1114fn28/build/lib/scale.conf
+
+# -----------------------------------------------------------------------------
+
+deps-fetch :
+	@git clone https://github.com/danpage/scale-hw.git ${DEPS}/scale-hw
+
+deps-patch :
+
+deps-build :
+	@make --no-builtin-rules --directory="${DEPS}/scale-hw/target/lpc1114fn28" all
+
+deps-clean : 
+	@make --no-builtin-rules --directory="${DEPS}/scale-hw/target/lpc1114fn28" clean
+
+# =============================================================================

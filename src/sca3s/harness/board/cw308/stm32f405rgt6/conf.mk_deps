@@ -1,0 +1,30 @@
+# Copyright (C) 2018 SCARV project <info@scarv.org>
+#
+# Use of this source code is restricted per the MIT license, a copy of which 
+# can be found at https://opensource.org/licenses/MIT (or should be included 
+# as LICENSE.txt within the associated archive or repository).
+
+# =============================================================================
+
+INCLUDES       += ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4
+INCLUDES       += ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4/CMSIS
+INCLUDES       += ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4/CMSIS/core
+INCLUDES       += ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4/CMSIS/device
+INCLUDES       += ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4/Legacy
+
+ SOURCES       += ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4/stm32f4_startup.S
+ SOURCES       += ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4/stm32f4_hal.c 
+ SOURCES       += ${DEPS}/chipwhisperer/hardware/victims/firmware/hal/stm32f4/stm32f4_hal_lowlevel.c 
+
+# -----------------------------------------------------------------------------
+
+deps-fetch :
+	@git clone https://github.com/newaetech/chipwhisperer.git ${DEPS}/chipwhisperer
+
+deps-patch :
+
+deps-build :
+
+deps-clean : 
+
+# =============================================================================
