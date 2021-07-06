@@ -13,25 +13,35 @@
 
 // ============================================================================
 
-/** @brief      A symbolic identifier for the generic    kernel name.
+/** @brief      A symbolic identifier for the generic kernel name.
   */
 
-#define KERNEL_NAMEOF_GENERIC ( 0 )
+#define KERNEL_NAMEOF_GENERIC   ( 0 )
 
-/** @brief      A symbolic identifier for the AES        kernel name.
+/** @brief      A symbolic identifier for the SHA-1   kernel name.
   */
 
-#define KERNEL_NAMEOF_AES     ( 1 )
+#define KERNEL_NAMEOF_SHA_1     ( 1 )
 
-/** @brief      A symbolic identifier for the encryption kernel mode.
+/** @brief      A symbolic identifier for the SHA-224 kernel name.
   */
 
-#define KERNEL_MODEOF_ENC     ( 0 )
+#define KERNEL_NAMEOF_SHA_2_224 ( 2 )
 
-/** @brief      A symbolic identifier for the decryption kernel mode.
+/** @brief      A symbolic identifier for the SHA-256 kernel name.
   */
 
-#define KERNEL_MODEOF_DEC     ( 1 )
+#define KERNEL_NAMEOF_SHA_2_256 ( 3 )
+
+/** @brief      A symbolic identifier for the SHA-384 kernel name.
+  */
+
+#define KERNEL_NAMEOF_SHA_2_384 ( 4 )
+
+/** @brief      A symbolic identifier for the SHA-512 kernel name.
+  */
+
+#define KERNEL_NAMEOF_SHA_2_512 ( 5 )
 
 // ----------------------------------------------------------------------------
 
@@ -42,25 +52,18 @@
 #define KERNEL_INITOF_ESR
 #endif
 
-/** @brief      Initial value of register that contains the cipher key.
-  */
-
-#if !defined( KERNEL_INITOF_K   )
-#define KERNEL_INITOF_K
-#endif
-
-/** @brief      Initial value of register that contains the  plaintext data.
+/** @brief      Initial value of register that contains the message.
   */
 
 #if !defined( KERNEL_INITOF_M   )
 #define KERNEL_INITOF_M
 #endif
 
-/** @brief      Initial value of register that contains the ciphertext data.
+/** @brief      Initial value of register that contains the  digest.
   */
 
-#if !defined( KERNEL_INITOF_C   )
-#define KERNEL_INITOF_C
+#if !defined( KERNEL_INITOF_D   )
+#define KERNEL_INITOF_D
 #endif
 
 // ============================================================================

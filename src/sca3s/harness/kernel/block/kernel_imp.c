@@ -182,39 +182,52 @@ uint8_t aes_enc_exp_step( uint8_t* r, const uint8_t* rk, uint8_t rc ) {
   return rc;
 }
 
-/** @brief      Execute the kernel prologue, i.e.,
-  *             any  pre-execution steps such as   allocation of memory.
+/** @brief      Execute the kernel prologue,
+  *             e.g., any  pre-execution steps such as   allocation of memory.
   *
-  * @return     a Boolean flag indicating success (\c true) or failure (\c false)
+  * @return     an instance of \c kernel_fec_t, 
+  *             e.g.,
+  *             \c KERNEL_FEC_FAILURE to indicate failure
+  *             or 
+  *             \c KERNEL_FEC_SUCCESS to indicate success;
+  *             this is captured in \c fec, the function exit code register.
   *
   * @note       Execution of this function is excluded from the trigger period.
   */
 
-bool kernel_prologue() {
-  return true;
+kernel_fec_t kernel_prologue() {
+  return KERNEL_FEC_SUCCESS;
 }
 
 /** @brief      Execute the kernel itself.
   *
-  * @return     a Boolean flag indicating success (\c true) or failure (\c false)
+  * @return     an instance of \c kernel_fec_t, 
+  *             e.g.,
+  *             \c KERNEL_FEC_FAILURE to indicate failure
+  *             or 
+  *             \c KERNEL_FEC_SUCCESS to indicate success;
+  *             this is captured in \c fec, the function exit code register.
   *
   * @note       Execution of this function is included in   the trigger period.
-  * @note       The  inputs are:
-  *             \c r of length \c KERNEL_SIZEOF_R bytes,
+  *
+  * @note       The kernel  input is:
   *             \c k of length \c KERNEL_SIZEOF_K bytes,
   *             and
+  *             either
   *             \c m of length \c KERNEL_SIZEOF_M bytes
   *             or 
   *             \c c of length \c KERNEL_SIZEOF_C bytes
-  *             depending on the mode.
-  *             The outputs are:
-  *             \c m of length \c KERNEL_SIZEOF_M bytes
-  *             or 
+  *             depending on the kernel mode.
+  *
+  * @note       The kernel output is:
+  *             either
   *             \c c of length \c KERNEL_SIZEOF_C bytes
-  *             depending on the mode.
+  *             or 
+  *             \c m of length \c KERNEL_SIZEOF_M bytes
+  *             depending on the kernel mode.
   */
 
-bool kernel() {
+kernel_fec_t kernel() {
   uint8_t s[ 4 * Nb ], rk[ 4 * Nb ], rc = 0x01;
 
   memcpy( rk, k, 16 * sizeof( uint8_t ) );
@@ -238,19 +251,24 @@ bool kernel() {
 
   memcpy(  c, s, 16 * sizeof( uint8_t ) );
 
-  return true;
+  return KERNEL_FEC_SUCCESS;
 }
 
-/** @brief      Execute the kernel epilogue, i.e.,
-  *             any post-execution steps such as deallocation of memory.
+/** @brief      Execute the kernel epilogue,
+  *             e.g., any post-execution steps such as deallocation of memory.
   *
-  * @return     a Boolean flag indicating success (\c true) or failure (\c false)
+  * @return     an instance of \c kernel_fec_t, 
+  *             e.g.,
+  *             \c KERNEL_FEC_FAILURE to indicate failure
+  *             or 
+  *             \c KERNEL_FEC_SUCCESS to indicate success;
+  *             this is captured in \c fec, the function exit code register.
   *
   * @note       Execution of this function is excluded from the trigger period.
   */
 
-bool kernel_epilogue() {
-  return true;
+kernel_fec_t kernel_epilogue() {
+  return KERNEL_FEC_SUCCESS;
 }
 
 // ============================================================================

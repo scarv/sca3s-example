@@ -7,43 +7,38 @@
 
 // ============================================================================
 
-#if   ( KERNEL_NAMEOF == KERNEL_NAMEOF_GENERIC )
+#if   ( KERNEL_NAMEOF == KERNEL_NAMEOF_GENERIC   )
 #define __KERNEL_NAMEOF "generic"
-#elif ( KERNEL_NAMEOF == KERNEL_NAMEOF_AES     )
-#define __KERNEL_NAMEOF "aes"
+#elif ( KERNEL_NAMEOF == KERNEL_NAMEOF_SHA_1     )
+#define __KERNEL_NAMEOF  "sha_1"
+#elif ( KERNEL_NAMEOF == KERNEL_NAMEOF_SHA_2_224 )
+#define __KERNEL_NAMEOF  "sha_2_224"
+#elif ( KERNEL_NAMEOF == KERNEL_NAMEOF_SHA_2_256 )
+#define __KERNEL_NAMEOF  "sha_2_256"
+#elif ( KERNEL_NAMEOF == KERNEL_NAMEOF_SHA_2_384 )
+#define __KERNEL_NAMEOF  "sha_2_384"
+#elif ( KERNEL_NAMEOF == KERNEL_NAMEOF_SHA_2_512 )
+#define __KERNEL_NAMEOF  "sha_2_512"
 #endif
 
-#if   ( KERNEL_MODEOF == KERNEL_MODEOF_ENC     )
-#define __KERNEL_MODEOF "enc"
-#elif ( KERNEL_MODEOF == KERNEL_MODEOF_DEC     )
-#define __KERNEL_MODEOF "dec"
-#endif
-
-#define KERNEL_ID VERSION ":" KERNEL ":" __KERNEL_NAMEOF "/" __KERNEL_MODEOF
+#define KERNEL_ID VERSION ":" KERNEL ":" __KERNEL_NAMEOF
 
 #pragma message( "?data fec"    " = " INT(       SIZEOF_FEC) )
 #pragma message( "?data fcc"    " = " INT(       SIZEOF_FCC) )
 #pragma message( "?data esr"    " = " INT(KERNEL_SIZEOF_ESR) )
-#pragma message( "?data k"      " = " INT(KERNEL_SIZEOF_K  ) )
 #pragma message( "?data m"      " = " INT(KERNEL_SIZEOF_M  ) )
-#pragma message( "?data c"      " = " INT(KERNEL_SIZEOF_C  ) )
+#pragma message( "?data d"      " = " INT(KERNEL_SIZEOF_D  ) )
 
 #pragma message( "#data fec"    " = " INT(       SIZEOF_FEC) )
 #pragma message( "#data fcc"    " = " INT(       SIZEOF_FCC) )
 #pragma message( "#data esr"    " = " INT(KERNEL_SIZEOF_ESR) )
-#pragma message( "#data k"      " = " INT(KERNEL_SIZEOF_K  ) )
 #pragma message( "#data m"      " = " INT(KERNEL_SIZEOF_M  ) )
-#pragma message( "#data c"      " = " INT(KERNEL_SIZEOF_C  ) )
+#pragma message( "#data d"      " = " INT(KERNEL_SIZEOF_D  ) )
 
 #pragma message( "?kernel_id"   " = "     KERNEL_ID          )
 
-#if   ( KERNEL_MODEOF == KERNEL_MODEOF_ENC )
-#pragma message( ">kernel_data" " = "     "esr" "," "k,m"    )
-#pragma message( "<kernel_data" " = " "fec,fcc" ","   "c"    )
-#elif ( KERNEL_MODEOF == KERNEL_MODEOF_DEC )
-#pragma message( ">kernel_data" " = "     "esr" "," "k,c"    )
-#pragma message( "<kernel_data" " = " "fec,fcc" ","   "m"    )
-#endif
+#pragma message( ">kernel_data" " = "     "esr" "," "m"      )
+#pragma message( "<kernel_data" " = " "fec,fcc" "," "d"      )
 
 // ============================================================================
 
@@ -62,20 +57,27 @@ kernel_fec_t fec = KERNEL_FEC_SUCCESS;
 
 kernel_fcc_t fcc = 0;
 
-/** @brief      A register that contains the cipher key.
-  */
-
-uint8_t   k[ KERNEL_SIZEOF_K   ] = { KERNEL_INITOF_K   };
-
-/** @brief      A register that contains the  plaintext data.
+/** @brief      A register that contains the message.
   */
 
 uint8_t   m[ KERNEL_SIZEOF_M   ] = { KERNEL_INITOF_M   };
 
-/** @brief      A register that contains the ciphertext data.
+/** @brief      A register that contains the  digest.
   */
 
-uint8_t   c[ KERNEL_SIZEOF_C   ] = { KERNEL_INITOF_C   };
+uint8_t   d[ KERNEL_SIZEOF_D   ] = { KERNEL_INITOF_D   };
+
+// ----------------------------------------------------------------------------
+
+/** @brief      Number of used bytes in register that contains the message.
+  */
+
+uint8_t n_m = 0;
+
+/** @brief      Number of used bytes in register that contains the  digest.
+  */
+
+uint8_t n_d = 0;
 
 // ----------------------------------------------------------------------------
 
@@ -125,14 +127,8 @@ kernel_data_spec_t kernel_data_spec[] = {
   { .id = "fec", .data = ( uint8_t* )( &fec ), .used = ( uint8_t* )( NULL ), .size =        SIZEOF_FEC, .type = KERNEL_DATA_TYPE_O    },
   { .id = "fcc", .data = ( uint8_t* )( &fcc ), .used = ( uint8_t* )( NULL ), .size =        SIZEOF_FCC, .type = KERNEL_DATA_TYPE_O    },
 // kernel-specific
-  { .id =   "k", .data = ( uint8_t* )(    k ), .used = ( uint8_t* )( NULL ), .size = KERNEL_SIZEOF_K,   .type = KERNEL_DATA_TYPE_I    },
-#if   ( KERNEL_MODEOF == KERNEL_MODEOF_ENC )
-  { .id =   "m", .data = ( uint8_t* )(    m ), .used = ( uint8_t* )( NULL ), .size = KERNEL_SIZEOF_M,   .type = KERNEL_DATA_TYPE_I    },
-  { .id =   "c", .data = ( uint8_t* )(    c ), .used = ( uint8_t* )( NULL ), .size = KERNEL_SIZEOF_C,   .type = KERNEL_DATA_TYPE_O    },
-#elif ( KERNEL_MODEOF == KERNEL_MODEOF_DEC )
-  { .id =   "c", .data = ( uint8_t* )(    c ), .used = ( uint8_t* )( NULL ), .size = KERNEL_SIZEOF_C,   .type = KERNEL_DATA_TYPE_I    },
-  { .id =   "m", .data = ( uint8_t* )(    m ), .used = ( uint8_t* )( NULL ), .size = KERNEL_SIZEOF_M,   .type = KERNEL_DATA_TYPE_O    },
-#endif
+  { .id =   "m", .data = ( uint8_t* )(    m ), .used = ( uint8_t* )( &n_m ), .size = KERNEL_SIZEOF_M,   .type = KERNEL_DATA_TYPE_I    },
+  { .id =   "d", .data = ( uint8_t* )(    d ), .used = ( uint8_t* )( &n_d ), .size = KERNEL_SIZEOF_D,   .type = KERNEL_DATA_TYPE_O    },
 // terminator
   { .id =  NULL, .data = ( uint8_t* )( NULL ), .used = ( uint8_t* )( NULL ), .size = 0,                 .type = KERNEL_DATA_TYPE_NONE }
 };

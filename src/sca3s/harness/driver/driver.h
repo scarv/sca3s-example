@@ -12,26 +12,30 @@
 #include "kernel.h"
 #include  "board.h"
 
+// ============================================================================
+
 typedef bool (*driver_command_t)( char* ack, char* req[], int n );
 
 #define DRIVER_COMMAND(  f) bool f( char* ack, char* req[], int n )
 
-#define DRIVER_EXECUTE(x,f) {                                      \
-  if( x ) {                                                        \
-    board_trigger_wr(  true );                                     \
-  }                                                                \
-                                                                   \
-  uint64_t kernel_tsc_init = board_tsc();                          \
-  bool r = f;                                                      \
-  uint64_t kernel_tsc_fini = board_tsc();                          \
-                                                                   \
-  if( x ) {                                                        \
-    board_trigger_wr( false );                                     \
-  }                                                                \
-                                                                   \
-  kernel_tsc = board_tsc_diff( kernel_tsc_init, kernel_tsc_fini ); \
-                                                                   \
-  return r;                                                        \
+#define DRIVER_EXECUTE(x,f) {                                     \
+  if( x ) {                                                       \
+    board_trigger_wr(  true );                                    \
+  }                                                               \
+                                                                  \
+  board_cycle_t board_cycle_x = board_cycle_rd();                 \
+  *driver_fec = f;                                                \
+  board_cycle_t board_cycle_y = board_cycle_rd();                 \
+                                                                  \
+  if( x ) {                                                       \
+    board_trigger_wr( false );                                    \
+  }                                                               \
+                                                                  \
+  *driver_fcc = board_cycle_diff( board_cycle_x, board_cycle_y ); \
+                                                                  \
+  return true;                                                    \
 }
+
+// ============================================================================
 
 #endif
