@@ -17,7 +17,7 @@
   */
 
 #if !defined( KERNEL_NAMEOF     )
-#define KERNEL_NAMEOF     ( KERNEL_NAMEOF_AES )
+#define KERNEL_NAMEOF     ( KERNEL_NAMEOF_AES     )
 #endif
 
 /** @brief      The kernel mode, e.g.,
@@ -28,7 +28,7 @@
   */
 
 #if !defined( KERNEL_MODEOF     )
-#define KERNEL_MODEOF     ( KERNEL_MODEOF_DEFAULT )
+#define KERNEL_MODEOF     ( KERNEL_MODEOF_ENC     )
 #endif
 
 // ----------------------------------------------------------------------------
